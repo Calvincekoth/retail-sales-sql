@@ -1137,6 +1137,72 @@ FROM customers c
 LEFT JOIN orders o
     ON c.customer_id = o.customer_id
 WHERE o.customer_id IS NULL;
-       
+       --23 Identify customers who have never ordered.
+SELECT
+    c.customer_id,
+    c.customer_name,
+    c.city
+FROM customers c
+LEFT JOIN orders o
+    ON c.customer_id = o.customer_id
+WHERE o.customer_id is null;
+
+--24Find the 10 highest-spending customers.
+select
+    c.customer_id,
+    c.customer_name,
+    SUM(o.quantity * o.unit_price * (1 - o.discount / 100.0)) AS total_spending
+from customers c
+inner join orders o
+    on c.customer_id = o.customer_id
+group by
+    c.customer_id,
+    c.customer_name
+order by total_spending desc
+limit 10;
+
+--25Calculate revenue by customer city.
+select
+    c.city,
+    sum(o.quantity * o.unit_price * (1 - o.discount / 100.0)) as total_revenue
+from customers c
+inner join orders o
+    on c.customer_id = o.customer_id
+group by c.city
+order by total_revenue desc;
+--26Identify customers with more than five orders.
+   select
+    c.customer_id,
+    c.customer_name,
+    count(o.order_id) as total_orders
+from customers c
+inner join orders o
+    on c.customer_id = o.customer_id
+group by
+    c.customer_id,
+    c.customer_name
+having count(o.order_id) > 5
+order by total_orders desc;
+--27Calculate average customer spending by segment.
+select
+    c.customer_segment,
+    avg(o.quantity * o.unit_price * (1 - o.discount / 100.0)) as average_spending
+from customers c
+inner join orders o
+    on c.customer_id = o.customer_id
+group by c.customer_segment
+order by average_spending desc;
+
+--28Identify the most popular category among VIP customers.
+select
+    o.product_category,
+    sum(o.quantity) as total_quantity_sold
+from customers c
+inner join orders o
+    on c.customer_id = o.customer_id
+where c.customer_segment = 'VIP'
+group by o.product_category
+order by total_quantity_sold desc
+limit 1;
 
 
