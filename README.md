@@ -1,439 +1,287 @@
-# Retail Sales & Customer Intelligence Using PostgreSQL
+# Duka Smart Electronics | Retail Sales & Customer Analytics
 
-**Category:** Data Analytics · **Technology:** PostgreSQL · **Level:** Beginner → Advanced ·
-**Time:** 7 days · **Marks:** 100
+**A PostgreSQL portfolio project by Calvince Okoth**  
+**Domain:** Retail Analytics · **Technology:** PostgreSQL · **Level:** Beginner to Advanced
 
----
-
-## 1. The story
-
-**Duka Smart Electronics** is a growing Kenyan retailer selling phones, laptops, accessories, TVs and
-home appliances in ten towns — from Nairobi and Mombasa to Meru and Machakos. It has been trading
-since January 2025 and keeps every order in a database.
-
-Management has questions. *Who are our best customers? Which products actually make money? Are sales
-growing? Which customers have stopped buying?* Nobody has looked at the data properly yet.
-
-You have just joined as a **Junior Data Analyst**. Your job this week: set up the company's database,
-load its data, answer 46 business questions in SQL, and tell management what you found.
-
-All the people and companies in this data are fictional.
+> **From 950 retail records to business decisions.**  
+> This project uses SQL to investigate customer value, product profitability, sales trends and customer inactivity for a growing Kenyan electronics retailer.
 
 ---
 
-## 2. What you will learn
+## 1. Executive overview
 
-- Creating a database and tables with keys and constraints
-- Filtering, sorting and summarising data (`SELECT`, `WHERE`, `GROUP BY`, `HAVING`)
-- Combining tables with `JOIN`s — including finding what is *missing* with a `LEFT JOIN`
-- Breaking hard questions into steps with subqueries and CTEs (`WITH`)
-- Ranking, running totals and month-on-month growth with window functions
-- Saving logic as a view and a function
-- Turning query results into business insight a manager can act on
+Duka Smart Electronics is a fictional Kenyan retailer selling phones, laptops, accessories, televisions and home appliances across ten towns. The business has recorded its customer and order activity since January 2025, but management has not yet used the data to guide decisions.
 
----
+As the Junior Data Analyst, I use PostgreSQL to build a relational database, validate the records and answer 46 business questions. The analysis moves from foundational SQL queries to CTEs, window functions, a reporting view and a PL/pgSQL function.
 
-## 3. What you need
+The project is designed to answer four management priorities:
 
-1. **PostgreSQL 14 or newer.**
-   - Windows/macOS: download from <https://www.postgresql.org/download/> (the installer includes
-     **pgAdmin** and **psql**). Remember the password you set for the `postgres` user.
-   - Ubuntu: `sudo apt install postgresql`
-2. **A SQL editor** — pgAdmin (comes with PostgreSQL), DBeaver, or VS Code with a PostgreSQL extension.
-   You can also use `psql` in a terminal; the commands below show both.
-3. **Git and a GitHub account** to submit your work.
+1. **Customer value:** Who are the highest-spending customers, and who may have stopped buying?
+2. **Product economics:** Which products and categories generate revenue and gross profit?
+3. **Sales momentum:** Is monthly revenue increasing or decreasing?
+4. **Business action:** What should management prioritise based on the evidence?
 
-Check PostgreSQL is installed:
+The deliverable is not just a set of SQL exercises. It is a reproducible retail analytics workflow that turns transactional data into decision-ready information.
 
-```bash
-psql --version
+## 2. Dataset at a glance
+
+| Dataset component | Volume / coverage |
+|---|---:|
+| Customers | 150 |
+| Orders | 800 |
+| Total records | 950 |
+| Product categories | 5 |
+| Customer locations | 10 Kenyan towns |
+| Customer segments | Retail, Corporate, VIP |
+| Payment methods | 4 |
+| Order statuses | Completed, Pending, Cancelled |
+| Trading history | January 2025 – September 2026 |
+
+**Locations:** Nairobi, Mombasa, Kisumu, Nakuru, Eldoret, Thika, Nyeri, Meru, Machakos and Kiambu.
+
+**Product categories:** Electronics, Accessories, Home Appliances, Computing and Mobile Phones.
+
+The customer names are fictional. This dataset is intended for portfolio and analytical practice, not as a representation of a real company's confidential records.
+
+## 3. Business rules and metric definitions
+
+These definitions are applied consistently throughout the analysis.
+
+| Measure | Definition |
+|---|---|
+| Revenue | `quantity * unit_price * (1 - discount / 100.0)` |
+| Cost | `quantity * cost_price` |
+| Gross profit | `revenue - cost` |
+| Gross profit margin | `profit / NULLIF(revenue, 0) * 100` |
+| Money metrics | Completed orders only |
+| Order counts | All orders, regardless of status |
+| Customer counts | Distinct customers |
+| Latest data date | `MAX(order_date)` from the orders table |
+| Reporting month | `DATE_TRUNC('month', order_date)` |
+| Discount | Percentage; for example, `10` means 10% off |
+
+**Important analytical choices**
+
+- Revenue, cost, profit, spending and average order value include **Completed** orders only.
+- Order counts include Completed, Pending and Cancelled orders unless a question explicitly asks for a particular status.
+- The dataset's latest order date is used as the reference date for inactivity analysis. The computer's current date is not used.
+- `NULLIF` protects margin calculations from division by zero.
+- A customer's spending is the sum of completed-order revenue, after discount.
+- In Q27, average customer spending is calculated across all customers in each segment; customers with no completed revenue contribute zero.
+- In Q28, popularity is measured by the number of orders per category among VIP customers, regardless of status.
+- In Q34, customers with no completed order are not classified as inactive; there is no completed-order date from which to measure inactivity.
+- In Q41, all customers are included in the four spending groups, including customers with zero completed revenue.
+
+## 4. Database model
+
+The project uses two related tables.
+
+### `customers`
+
+| Column | Description |
+|---|---|
+| `customer_id` | Primary key; unique customer identifier |
+| `customer_name` | Customer's fictional full name |
+| `gender` | Male or Female |
+| `city` | Customer's town |
+| `registration_date` | Date the customer joined |
+| `customer_segment` | Retail, Corporate or VIP |
+
+### `orders`
+
+| Column | Description |
+|---|---|
+| `order_id` | Primary key; unique order identifier |
+| `customer_id` | Foreign key to `customers.customer_id` |
+| `order_date` | Transaction date |
+| `product_name` | Product ordered |
+| `product_category` | Product category |
+| `quantity` | Units ordered |
+| `unit_price` | Selling price per unit before discount, KSh |
+| `cost_price` | Cost per unit, KSh |
+| `discount` | Discount percentage, from 0 to 100 |
+| `payment_method` | M-Pesa, Cash, Card or Bank Transfer |
+| `order_status` | Completed, Pending or Cancelled |
+
+**Relationship:** One customer can place many orders; each order belongs to one customer.
+
+## 5. Analytical coverage: 46 SQL questions
+
+The `queries.sql` file contains all 46 questions, each labelled `-- Q1` through `-- Q46`.
+
+| Section | Questions | Analytical focus |
+|---|---:|---|
+| A | Q1–Q10 | SELECT, filtering, sorting, pattern matching and DISTINCT |
+| B | Q11–Q20 | Aggregations, grouping, revenue and cancellation metrics |
+| C | Q21–Q28 | INNER/LEFT JOIN, customer spending and segmentation |
+| D | Q29–Q34 | Subqueries, CTEs, category profitability and inactivity |
+| E | Q35–Q42 | RANK, ROW_NUMBER, DENSE_RANK, LAG, NTILE and running totals |
+| F | Q43–Q46 | Reporting view, PL/pgSQL function, customer value bands and management report |
+
+### Advanced SQL demonstrated
+
+- **CTEs:** break multi-stage analysis into readable, testable steps.
+- **Window functions:** rank customers and products, calculate running totals and compare monthly results.
+- **Time-series analysis:** use `DATE_TRUNC` and `LAG` to measure month-over-month performance.
+- **Customer segmentation:** apply `NTILE(4)` to group customers by completed-order spending.
+- **Reusable reporting:** create `monthly_sales_summary` as a database view.
+- **Database programming:** create a PL/pgSQL function that returns completed-order revenue for a supplied customer ID.
+- **Performance investigation:** use `EXPLAIN ANALYZE` as the stretch task to compare query plans before and after indexing.
+
+## 6. Repository structure
+
+```text
+retail-sales-sql/
+├── README.md
+├── 01_create_database.sql
+├── 02_create_tables.sql
+├── 03_insert_customers.sql
+├── 04_insert_orders.sql
+├── 05_verify_data.sql
+├── queries.sql
+├── insights.md
+└── screenshots/
+    ├── 05_verify_data.png
+    ├── revenue_by_category.png
+    ├── top_customers.png
+    └── monthly_revenue.png
 ```
 
----
+Keep the original setup and data-loading scripts in the repository. The `queries.sql` file contains the 46 analytical answers. Add `insights.md` and screenshots after running the queries and verifying the actual results.
 
-## 4. The files you downloaded
+## 7. Setup and execution
 
-Download all six files from the project page into one folder.
+### Prerequisites
 
-| File | What it does | Run it connected to |
-|---|---|---|
-| `01_create_database.sql` | Creates the `retail_analytics` database | `postgres` (any existing DB) |
-| `02_create_tables.sql` | Creates the `customers` and `orders` tables | `retail_analytics` |
-| `03_insert_customers.sql` | Inserts 150 customers | `retail_analytics` |
-| `04_insert_orders.sql` | Inserts 800 orders | `retail_analytics` |
-| `05_verify_data.sql` | Checks everything loaded correctly | `retail_analytics` |
-| `README.md` | This guide | — |
+- PostgreSQL
+- pgAdmin or DBeaver, or the `psql` command-line client
+- Git (for version control and publishing)
 
-> **Why two steps?** PostgreSQL can create a database, but it cannot then switch to it inside the same
-> script. So you run file 01 while connected to the default `postgres` database, then **connect to
-> `retail_analytics`** and run 02–05.
+### Step 1 — Download the project files
 
-All scripts are **safe to run twice** — nothing is duplicated.
+Download all six supplied dataset files into one project folder:
 
----
+- `README.md`
+- `01_create_database.sql`
+- `02_create_tables.sql`
+- `03_insert_customers.sql`
+- `04_insert_orders.sql`
+- `05_verify_data.sql`
 
-## 5. Setting up — step by step
+Add the supplied `queries.sql` file from this repository.
 
-### Option A: using psql (terminal)
+### Step 2 — Create the database
 
-Open a terminal in the folder with the files and run, one at a time:
+Connect to the default `postgres` database and run:
 
 ```bash
-psql -U postgres -d postgres         -f 01_create_database.sql
+psql -U postgres -d postgres -f 01_create_database.sql
+```
+
+### Step 3 — Create tables
+
+Connect to `retail_analytics`, then run:
+
+```bash
 psql -U postgres -d retail_analytics -f 02_create_tables.sql
+```
+
+### Step 4 — Load customers and orders
+
+Run the customer script before the order script because orders reference customers through a foreign key.
+
+```bash
 psql -U postgres -d retail_analytics -f 03_insert_customers.sql
 psql -U postgres -d retail_analytics -f 04_insert_orders.sql
+```
+
+### Step 5 — Verify the data
+
+```bash
 psql -U postgres -d retail_analytics -f 05_verify_data.sql
 ```
 
-(On Windows, if `psql` is not found, use the **SQL Shell (psql)** app from the Start menu, or add
-`C:\Program Files\PostgreSQL\<version>\bin` to your PATH.)
+The verification should confirm **150 customers and 800 orders**. Save a screenshot of the successful output in `screenshots/`.
 
-### Option B: using pgAdmin
-
-1. Open pgAdmin, connect to your server, and right-click **Databases → Create → Database…**. Name it
-   `retail_analytics` and save. (pgAdmin does not understand the `\gexec` line in file 01, so creating
-   it this way replaces step 01.)
-2. Click `retail_analytics` in the tree, then **Tools → Query Tool**.
-3. Open `02_create_tables.sql` (folder icon), press **Execute** (▶ / F5).
-4. Do the same for `03_insert_customers.sql`, then `04_insert_orders.sql`, then `05_verify_data.sql`.
-
-### Check it worked
-
-`05_verify_data.sql` prints a table of checks. You should see **150 customers**, **800 orders**,
-**0 orders with no customer**, and orders from **January 2025 to September 2026**. Take a screenshot —
-it goes in your submission.
-
----
-
-## 6. The data
-
-### `customers` — one row per customer (150 rows)
-
-| Column | Type | Meaning |
-|---|---|---|
-| `customer_id` | INTEGER, **primary key** | Unique customer number |
-| `customer_name` | VARCHAR(100), not null | Full name |
-| `gender` | VARCHAR(10) | `Male` / `Female` |
-| `city` | VARCHAR(50) | One of ten Kenyan towns |
-| `registration_date` | DATE | When they joined |
-| `customer_segment` | VARCHAR(20) | `Retail`, `Corporate` or `VIP` |
-
-### `orders` — one row per order (800 rows)
-
-| Column | Type | Meaning |
-|---|---|---|
-| `order_id` | INTEGER, **primary key** | Unique order number |
-| `customer_id` | INTEGER, **foreign key → customers** | Who placed it |
-| `order_date` | DATE, not null | When it was placed |
-| `product_name` | VARCHAR(100) | What was bought |
-| `product_category` | VARCHAR(50) | `Electronics`, `Accessories`, `Home Appliances`, `Computing`, `Mobile Phones` |
-| `quantity` | INTEGER (> 0) | Units in the order |
-| `unit_price` | NUMERIC(12,2) | Selling price per unit, KSh, **before** discount |
-| `cost_price` | NUMERIC(12,2) | What one unit cost the company, KSh |
-| `discount` | NUMERIC(5,2) (0–100) | Discount **percentage** — `10` means 10% off |
-| `payment_method` | VARCHAR(30) | `M-Pesa`, `Cash`, `Card`, `Bank Transfer` |
-| `order_status` | VARCHAR(20) | `Completed`, `Pending`, `Cancelled` |
-
-### How the tables connect
-
-```
-customers (1) ──────────< orders (many)
-customer_id               customer_id
-```
-
-One customer can have many orders; every order belongs to exactly one customer. **Some customers have
-never ordered** — you will need a `LEFT JOIN` to find them.
-
-Before you start, look at the data:
-
-```sql
-SELECT * FROM customers LIMIT 5;
-SELECT * FROM orders LIMIT 5;
-```
-
----
-
-## 7. Business rules — read these first
-
-Most mistakes in this project come from skipping this section.
-
-| Measure | Formula |
-|---|---|
-| **Revenue** | `quantity * unit_price * (1 - discount / 100)` |
-| **Cost** | `quantity * cost_price` |
-| **Profit** | `revenue - cost` |
-| **Profit margin %** | `profit / revenue * 100` — use `NULLIF(revenue, 0)` so you never divide by zero |
-
-1. **Money questions use Completed orders only.** Revenue, cost, profit, spending and averages count
-   only `order_status = 'Completed'`, unless a question says otherwise. Pending orders are not paid
-   yet; cancelled ones never will be.
-2. **Order counts include every order**, whatever its status ("how many orders" means all of them).
-3. **Customer counts count distinct customers.**
-4. **"Today" is the latest `order_date` in the data**, not your computer's date — so everyone gets the
-   same answer. Get it with `SELECT MAX(order_date) FROM orders`.
-5. **Months** mean year *and* month — January 2025 and January 2026 are different months. Use
-   `DATE_TRUNC('month', order_date)`.
-6. Round money to 2 decimal places with `ROUND(…, 2)`.
-
----
-
-## 8. The assignment — 46 questions
-
-Write every answer in `queries.sql`, numbered like this:
-
-```sql
--- Q1: Retrieve all customer records
-SELECT ...;
-
--- Q2: Display customer names, cities, and segments
-SELECT ...;
-```
-
-Each section starts with the concepts you need and a reminder of the syntax. **The hints show the
-shape of a query, not the answer.**
-
-### Section A — SQL fundamentals (Q1–Q10)
-
-*Concepts:* `SELECT`, `WHERE`, `DISTINCT`, `ORDER BY`, `LIMIT`, `LIKE`, `BETWEEN`
-
-```sql
-SELECT column1, column2 FROM table WHERE condition ORDER BY column DESC LIMIT n;
--- text patterns: WHERE name LIKE 'K%'      ranges: WHERE x BETWEEN 1 AND 10
-```
-
-1. Retrieve all customer records.
-2. Display customer names, cities, and segments.
-3. Find customers living in Nairobi.
-4. Find customers registered after January 1, 2025.
-5. Display all unique customer cities.
-6. Retrieve the 10 most recent orders.
-7. Find orders with unit prices above KSh 10,000.
-8. Find customers whose names start with A.
-9. Retrieve orders with quantities between 2 and 5.
-10. Find orders paid through M-Pesa.
-
-### Section B — Aggregation and grouping (Q11–Q20)
-
-*Concepts:* `COUNT`, `SUM`, `AVG`, `MIN`, `MAX`, `GROUP BY`, `HAVING`, `ROUND`
-
-```sql
-SELECT group_column, SUM(...) AS total
-FROM table WHERE row_condition
-GROUP BY group_column
-HAVING SUM(...) > 1000;      -- HAVING filters groups; WHERE filters rows
-```
-
-11. Count all customers.
-12. Count all orders.
-13. Calculate completed-order revenue.
-14. Calculate the average completed-order value.
-15. Find the highest and lowest product prices.
-16. Calculate revenue by product category.
-17. Count customers by city.
-18. Calculate quantity sold by product.
-19. Find categories generating more than KSh 100,000 in revenue.
-20. Calculate the percentage of cancelled orders.
-
-*Tip for Q20:* `COUNT(*) / COUNT(*)` between whole numbers gives 0 in PostgreSQL. Multiply by `100.0`
-first. `COUNT(*) FILTER (WHERE …)` counts only some rows.
-
-### Section C — Joins and customer analytics (Q21–Q28)
-
-*Concepts:* `INNER JOIN`, `LEFT JOIN`, `GROUP BY`, `HAVING`
-
-```sql
-SELECT c.customer_name, o.order_id
-FROM customers c
-JOIN orders o ON o.customer_id = c.customer_id;      -- only customers WITH orders
-
--- LEFT JOIN keeps every customer; those without orders get NULLs on the orders side
-```
-
-21. Display orders with customer names and cities.
-22. Calculate total spending by customer.
-23. Identify customers who have never ordered.
-24. Find the 10 highest-spending customers.
-25. Calculate revenue by customer city.
-26. Identify customers with more than five orders.
-27. Calculate average customer spending by segment.
-28. Identify the most popular category among VIP customers.
-
-*Tip for Q27:* first find each customer's total, then average those totals per segment. Say in a
-comment how you defined it. *Q28:* say what "popular" means in your answer (orders? units?).
-
-### Section D — Subqueries and CTEs (Q29–Q34)
-
-*Concepts:* subqueries, `WITH` (CTEs), nested aggregation
-
-```sql
-WITH step_one AS (
-    SELECT customer_id, SUM(...) AS total FROM orders GROUP BY customer_id
-)
-SELECT * FROM step_one WHERE total > (SELECT AVG(total) FROM step_one);
-```
-
-29. Find customers spending above the average total spending per purchasing customer.
-30. Find products priced above the overall average unit price.
-31. Use a CTE to identify the three highest-revenue months.
-32. Find customers purchasing from at least three categories.
-33. Use a CTE to calculate category revenue, cost, profit, and profit margin.
-34. Find customers whose latest completed order is more than 90 days before the latest order date in
-    the dataset.
-
-*Tip for Q32:* `COUNT(DISTINCT product_category)`. *Q34:* subtracting dates gives a number of days:
-`DATE '2026-09-30' - DATE '2026-09-01'` is `29`.
-
-### Section E — Window functions (Q35–Q42)
-
-*Concepts:* `OVER`, `PARTITION BY`, `ROW_NUMBER`, `RANK`, `DENSE_RANK`, `LAG`, `NTILE`
-
-```sql
-SELECT customer_id, order_date,
-       ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY order_date DESC) AS n
-FROM orders;
--- RANK leaves gaps after ties (1,1,3); DENSE_RANK does not (1,1,2)
--- running total:  SUM(x) OVER (ORDER BY month)
--- previous row:   LAG(x) OVER (ORDER BY month)
-```
-
-35. Rank customers by spending using `RANK()`.
-36. Number each customer's orders by recency using `ROW_NUMBER()`.
-37. Rank products within categories using `DENSE_RANK()`.
-38. Calculate cumulative monthly revenue.
-39. Compare monthly revenue using `LAG()`.
-40. Calculate month-over-month revenue growth (%).
-41. Divide customers into four spending groups using `NTILE(4)`.
-42. Calculate each category's share of total revenue using window functions.
-
-*Tip:* for monthly questions, build a `monthly` CTE (month, revenue) first, then apply the window
-function to it. *Q42:* `SUM(SUM(x)) OVER ()` is the grand total next to each group.
-
-### Section F — Advanced business intelligence (Q43–Q46)
-
-*Concepts:* views, PL/pgSQL functions, `CASE`, reporting queries
-
-```sql
-CREATE OR REPLACE VIEW my_view AS SELECT ...;
-
-CREATE OR REPLACE FUNCTION my_function(p_id INTEGER)
-RETURNS NUMERIC LANGUAGE plpgsql AS $$
-DECLARE v_result NUMERIC;
-BEGIN
-    SELECT ... INTO v_result FROM ... WHERE id = p_id;
-    RETURN v_result;
-END;
-$$;
-
-SELECT CASE WHEN x >= 100 THEN 'High' WHEN x >= 50 THEN 'Medium' ELSE 'Low' END ...
-```
-
-43. Create a `monthly_sales_summary` view (month, orders, revenue, cost, profit). Then `SELECT` from it.
-44. Create a PostgreSQL function that returns completed-order revenue for a supplied customer ID. Show
-    it working for one customer **and** for an ID that does not exist (it should return 0, not NULL).
-45. Segment customers into High, Medium and Low Value. **Explain why you chose your thresholds** — for
-    example percentiles, or round KSh amounts based on what the data looks like.
-46. Produce a management report: the top five customers, top five products, the most profitable
-    category, and the lowest-revenue month.
-
----
-
-## 9. Insights — `insights.md`
-
-Queries are half the job; the other half is telling management what they mean. Write **at least
-five insights**. Each one needs:
-
-1. **The finding**, with the number from your query.
-2. **Why it matters** to the business.
-3. **What you recommend.**
-
-Here is the difference, using a made-up supermarket rather than this data (so it gives nothing away):
-
-**Weak:** "Bakery revenue is 2,000,000."
-
-**Strong:** "Fresh produce brings in the most revenue, but the bakery has the best margin — about a
-third of every shilling is profit, against 8% for produce. Recommendation: put the bakery by the
-entrance and stop discounting bread on weekdays."
-
-Write yours the same way, with your own numbers and the question they came from. Good places to look: Q16 and
-Q33 (what sells vs what makes money), Q25 (cities), Q27 (segments), Q34 (customers drifting away),
-Q40 (growth and seasonality), Q45 (value bands).
-
----
-
-## 10. What to submit
-
-A **public** GitHub repository laid out like this:
-
-```
-retail-sales-sql/
-├── README.md        # your own: what the project is, how to set it up, how to run your queries
-├── schema.sql       # your CREATE TABLE statements (you may copy 02 and improve it)
-├── queries.sql      # all 46 answers, numbered -- Q1 … -- Q46
-├── insights.md      # at least five insights
-└── screenshots/     # 05_verify_data output + 3–5 interesting query results
-```
-
-You do not need to include the insert scripts.
-
-### Pushing to GitHub
+### Step 6 — Run the analysis
 
 ```bash
-cd retail-sales-sql
-git init
-git add .
-git commit -m "Retail sales SQL analysis"
-# create an empty public repo on github.com called retail-sales-sql, then:
-git remote add origin https://github.com/<your-username>/retail-sales-sql.git
-git branch -M main
-git push -u origin main
+psql -U postgres -d retail_analytics -f queries.sql
 ```
 
-Then paste `https://github.com/<your-username>/retail-sales-sql` into the **Submit** box on the
-project page. You can resubmit as often as you like until the deadline — your mentor grades the
-latest version.
+You can also open `queries.sql` in pgAdmin or DBeaver and execute each numbered section individually. Check that the active connection is `retail_analytics`.
+
+> If your setup scripts use a different database name or schema, follow the supplied scripts and update the connection instructions accordingly. Do not run the database-creation script while connected to the database it is trying to create.
+
+## 8. Business insights and management recommendations
+
+Create an `insights.md` file after executing the SQL. Include at least five findings. Each finding should contain:
+
+1. **Evidence:** the actual SQL result, with the value and relevant period/category/customer.
+2. **Interpretation:** what the result means for the business.
+3. **Recommendation:** a specific action management could take.
+
+Suggested insight areas:
+
+- Top five customers by completed-order revenue.
+- Highest-revenue and highest-gross-profit products.
+- Most profitable product category by gross profit.
+- Month-over-month revenue movement.
+- Customers whose latest completed order is more than 90 days before the dataset's latest order date.
+- Cancellation rate and the operational question it raises.
+
+Do not invent findings or write recommendations as if a pattern has been proven before running the queries. Distinguish revenue from profit: a product with high sales is not necessarily the product with the highest gross profit.
+
+## 9. Quality checks
+
+Before publishing, confirm that:
+
+- `05_verify_data.sql` reports 150 customers and 800 orders.
+- Every question from Q1 to Q46 has a query under the matching comment.
+- Completed-order-only rules are applied to all money metrics.
+- Discounts are treated as percentages, not currency amounts.
+- Customer counts use distinct customer identifiers where appropriate.
+- Q34 uses the latest order date in the dataset.
+- Q43's view counts all orders but calculates financial measures from Completed orders only.
+- Q44 returns zero for a customer ID with no matching completed revenue.
+- The view and function execute successfully.
+- Business insights are supported by query outputs.
+
+## 10. Assessment and project scope
+
+The original assignment is designed for seven days and 100 marks.
+
+| Assessment area | Weight |
+|---|---:|
+| Database setup and schema | 10% |
+| SQL correctness — Q1–Q28 | 30% |
+| SQL correctness — Q29–Q46 | 30% |
+| Business insights | 20% |
+| Code quality and documentation | 10% |
+
+**Stretch goals**
+
+- Use `EXPLAIN ANALYZE` on a slow query, add a justified index and compare execution plans.
+- Build a monthly cohort-retention analysis to measure repeat purchasing.
+- Connect PostgreSQL to Power BI, Excel or Metabase and create a one-page dashboard from the reporting view.
+
+## 11. About the analyst
+
+**Calvince Okoth — Data Analyst | Aspiring Data Engineer**
+
+I am building practical capability in data analytics and data engineering, with an interest in using databases and analytical tools to solve real business problems.
+
+My toolkit includes PostgreSQL, SQL, Excel and Power BI, supported by experience in data annotation, quality assurance and structured data review.
+
+This project demonstrates my approach to analytical work: understand the business question, validate the data, write transparent SQL, interpret the evidence and communicate an actionable recommendation.
+
+- **GitHub:** [Calvincekoth](https://github.com/Calvincekoth)
+- **LinkedIn:** [Calvince Okoth](https://www.linkedin.com/in/calvince-okoth-85792b25a/)
 
 ---
 
-## 11. How you are graded (100 marks)
+**Project:** Duka Smart Electronics — Retail Sales & Customer Analytics  
+**Database:** PostgreSQL · **Dataset:** 150 customers / 800 orders  
+**Focus:** SQL Analytics · Customer Intelligence · Product Profitability · Business Intelligence
 
-| Criterion | Marks |
-|---|---|
-| Database setup & schema | 10 |
-| SQL correctness — Sections A–C | 30 |
-| SQL correctness — Sections D–F | 30 |
-| Business insights | 20 |
-| Code quality & documentation | 10 |
-
-The full descriptions are in the rubric on the project page.
-
----
-
-## 12. Suggested plan for the week
-
-| Day | Do this |
-|---|---|
-| 1 | Install PostgreSQL, run scripts 01–05, explore both tables. Do Section A. |
-| 2 | Section B. Re-read the business rules before every money question. |
-| 3 | Section C. Draw the join on paper first if it helps. |
-| 4 | Section D. Write each CTE step on its own and check it before combining. |
-| 5 | Section E. Build the `monthly` CTE once and reuse it. |
-| 6 | Section F, then write `insights.md`. |
-| 7 | README, screenshots, push to GitHub, submit. Ask for help early if stuck. |
-
----
-
-## 13. Troubleshooting
-
-| Problem | Fix |
-|---|---|
-| `database "retail_analytics" does not exist` | Run 01 first, or create it in pgAdmin. |
-| `relation "customers" does not exist` | You are connected to the wrong database — connect to `retail_analytics`. |
-| `insert or update on table "orders" violates foreign key constraint` | Run 03 (customers) **before** 04 (orders). |
-| `\gexec` syntax error in pgAdmin | pgAdmin does not support it — create the database from the menu (Section 5, Option B). |
-| `password authentication failed` | Use the password you chose when installing PostgreSQL. |
-| My numbers differ from a classmate's | Check you used Completed orders only and applied the discount as a percentage. |
-| Percentage comes out as 0 | Integer division — multiply by `100.0` first. |
-
-Stuck for more than 30 minutes on one question? Move on and come back, and ask in your class channel —
-explain what you tried and paste the error.
+*Turning transactional data into decisions that move businesses forward.*
