@@ -1061,6 +1061,73 @@ SELECT*
 FROM orders o 
 WHERE payment_method='M-Pesa';
 
+--SECTION  B
+--11. count all customers
+SELECT 
+   count(customer_id)
+FROM customers;
+--12 count all orders 
+SELECT
+ count(order_id)
+FROM orders;
+ --13.calculate completed ordered revenue
+-- revenue = quantity * unit pice -discount/100)
+SELECT 
+sum(quantity*unit_price*(1-discount/100.0)) AS totle_revenue
+FROM orders
+WHERE order_status ='Completed';
+--14. Calculate the average completed-order value.
+SELECT
+AVG(quantity*unit_price*(1-discount/100.0)) AS average_completed_order
+FROM orders o
+WHERE order_status ='Completed';
+--15. Find the highest and lowest product prices.
+SELECT*
+FROM orders;
+SELECT 
+   max(unit_price)AS expensive_product,
+   min(unit_price)AS cheap_product
+FROM orders;
+--16. revenue by product category.
+
+SELECT 
+product_category,
+sum(quantity*unit_price*(1-discount/100.0)) AS totle_revenue
+FROM orders
+GROUP BY product_category;
+
+--17.Count customers by city.
+SELECT
+city,
+ count(customer_id)
+FROM customers c 
+GROUP BY city;
+
+--18. quantity sold by product.
+SELECT 
+product_category,
+ count(quantity) AS quantity_sold
+FROM orders o 
+GROUP BY product_category;
+--19. categories generating more than KSh 100,000 in revenue.
+SELECT
+    product_category,
+    SUM(quantity * unit_price * (1 - discount / 100.0)) AS total_revenue
+FROM orders
+WHERE order_status = 'Completed'
+GROUP BY product_category
+HAVING SUM(quantity * unit_price * (1 - discount / 100.0)) > 100000
+ORDER BY total_revenue DESC;
+--20 percentage of the cancelled orders
+SELECT
+    COUNT(CASE
+        WHEN order_status = 'Cancelled' THEN 1
+    END) * 100.0 / COUNT(*) AS cancelled_order_percentage
+FROM orders;
+
+
+
+
 
 
 
