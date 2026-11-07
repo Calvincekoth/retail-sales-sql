@@ -1,183 +1,147 @@
-# Duka Smart Electronics
-## Retail Sales, Customer Intelligence & Profitability Analytics
+# Duka Smart Electronics | Retail Sales & Customer Analytics
 
-**Data Analytics Project | PostgreSQL | SQL | Business Intelligence**
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18-336791?logo=postgresql&logoColor=white)
+![SQL](https://img.shields.io/badge/SQL-46%20queries-blue)
+![Level](https://img.shields.io/badge/Level-Beginner%20to%20Advanced-success)
+![Data](https://img.shields.io/badge/Data-150%20customers%20%7C%20800%20orders-informational)
 
-**Analyst:** Calvince Okoth
+**A PostgreSQL portfolio project by [Calvince Okoth](https://www.linkedin.com/in/calvince-okoth-85792b25a/)**
+
+> Customer value, product profitability, sales momentum and customer inactivity for a growing Kenyan electronics retailer, answered with SQL from basic queries to window functions and a PL/pgSQL function.
 
 ---
 
-## Business Overview
+## 1. Business problem
 
-Duka Smart Electronics is a growing Kenyan electronics retailer serving customers across ten towns, with a product portfolio spanning mobile phones, computers, accessories, televisions and home appliances.
+Duka Smart Electronics is a fictional Kenyan retailer selling phones, laptops, accessories, televisions and home appliances across ten towns. It has recorded customer and order data since January 2025, but management has not used it to make decisions.
 
-As the business expands, understanding sales performance, customer purchasing behaviour and product profitability becomes increasingly important.
+As the Junior Data Analyst, I built a PostgreSQL database, validated the data and answered 46 business questions to support four priorities:
 
-This project focuses on transforming the company's transactional data into structured business intelligence that supports management decision-making.
+| Priority | Question |
+|---|---|
+| Customer value | Who spends the most, and who may have stopped buying? |
+| Product economics | Which products and categories earn revenue, and which earn profit? |
+| Sales momentum | Is monthly revenue growing or falling? |
+| Business action | What should management do next, based on the evidence? |
 
-Using PostgreSQL, I developed a relational data environment and conducted an in-depth analysis of customer activity, sales performance, product economics and revenue trends.
+## 2. Key findings
 
-The objective is to identify business performance patterns, uncover opportunities and provide management with information that can support sustainable growth.
+All money figures use **Completed orders only** (see [Business rules](#4-business-rules)).
 
-## Business Intelligence Objectives
-
-The analysis focuses on five key business areas.
-
-**1. Revenue Performance**
-- Evaluate overall sales performance.
-- Analyse monthly revenue trends.
-- Identify changes in sales momentum.
-- Examine order completion and cancellation patterns.
-
-**2. Customer Intelligence**
-- Identify the highest-value customers.
-- Compare purchasing behaviour across customer segments.
-- Analyse customer spending patterns.
-- Identify potentially inactive customers.
-
-**3. Product Performance**
-- Determine revenue contribution by product.
-- Identify high-performing product categories.
-- Evaluate product costs and gross profitability.
-- Compare sales performance against product economics.
-
-**4. Customer Segmentation**
-- Analyse Retail, Corporate and VIP customer groups.
-- Rank customers according to completed-order spending.
-- Identify valuable customer groups.
-- Understand differences in purchasing activity.
-
-**5. Management Reporting**
-- Develop reusable monthly sales reporting.
-- Create customer-level revenue calculations.
-- Produce structured outputs to support business decisions.
-
-## Data Overview
-
-The analysis uses a fictional but structured retail dataset representing business activity from January 2025 to September 2026.
-
-| Data component | Volume |
+| Metric | Result |
 |---|---:|
-| Customer records | 150 |
-| Order records | 800 |
-| Total records | 950 |
-| Product categories | 5 |
-| Customer locations | 10 |
-| Customer segments | 3 |
-| Payment methods | 4 |
+| Revenue | KSh 24,155,371.70 |
+| Cost | KSh 21,264,450.00 |
+| Gross profit | KSh 2,890,921.70 |
+| Gross margin | 12.0% |
+| Cancellation rate (all orders) | 11.25% |
+| Customers with at least one Completed order | 132 of 150 |
 
-**Business locations:** Nairobi, Mombasa, Kisumu, Nakuru, Eldoret, Thika, Nyeri, Meru, Machakos and Kiambu.
+**1. Discounts are turning some sales into losses.**
+62 Completed order lines sold below cost, about **KSh -142k** in total. The worst products are the Hotpoint Refrigerator (16 lines), Hisense 43in Smart TV (13) and iPhone 13 (8). On big-ticket items with thin margins, a 10 to 20% discount pushes the sale under cost.
+*Recommendation:* set discount caps per product based on its margin, and review discount approval for refrigerators, TVs and phones.
 
-**Product categories:** Electronics, Accessories, Home Appliances, Computing and Mobile Phones.
+**2. Revenue and profit tell different stories.**
+Mobile Phones earns the most revenue (KSh 6.94M) and the most profit in shillings. But **Accessories earns a 42.4% margin** on only KSh 1.08M of revenue, against roughly 10 to 11% for every other category.
+*Recommendation:* push accessory bundles with phone and laptop sales to lift overall margin.
 
-*The dataset contains fictional customer information and is used to demonstrate a realistic retail analytics scenario.*
+| Category | Revenue (KSh) | Gross profit (KSh) | Margin |
+|---|---:|---:|---:|
+| Mobile Phones | 6,942,060.65 | 728,760.65 | 10.5% |
+| Computing | 6,596,221.70 | 700,021.70 | 10.6% |
+| Electronics | 5,515,359.20 | 547,359.20 | 9.9% |
+| Home Appliances | 4,024,234.05 | 458,034.05 | 11.4% |
+| Accessories | 1,077,496.10 | 456,746.10 | 42.4% |
 
-## Technology Stack
+**3. Nearly one in three customers is inactive.**
+47 customers have a last Completed order more than 90 days before the latest date in the data (30 Sep 2026).
+*Recommendation:* run a win-back campaign, starting with the highest past spenders.
 
-| Technology | Application |
+**4. VIP customers spend the most.**
+Average completed spend is about KSh 253k for VIP, 171k for Corporate and 141k for Retail (all customers in each segment, including those with no purchases). The top five customers are Brian Chebet, Peter Ndungu, Lucy Njoroge, Nancy Korir and Purity Ochieng.
+*Recommendation:* give VIP and Corporate accounts dedicated follow-up, and check whether Retail customers can be moved up.
+
+**5. Strong growth, with a sharp seasonal dip.**
+Revenue peaked in December 2025 at about KSh 2.03M, fell to about **KSh 322k in January 2026**, then rebuilt to over KSh 2M by August and September 2026.
+*Recommendation:* plan stock and promotions around the January slowdown.
+
+Full evidence, with query references, is in [`insights.md`](insights.md).
+
+## 3. Dataset
+
+| Component | Coverage |
 |---|---|
-| PostgreSQL | Relational database management |
-| SQL | Data extraction, transformation and analysis |
-| DBeaver | Database administration and query execution |
-| Git | Version control |
-| GitHub | Project documentation and collaboration |
+| Customers | 150 |
+| Orders | 800 (634 Completed, 76 Pending, 90 Cancelled) |
+| Categories | Electronics, Accessories, Home Appliances, Computing, Mobile Phones |
+| Locations | Nairobi, Mombasa, Kisumu, Nakuru, Eldoret, Thika, Nyeri, Meru, Machakos, Kiambu |
+| Segments | Retail, Corporate, VIP |
+| Payment methods | M-Pesa, Cash, Card, Bank Transfer |
+| Period | 1 January 2025 to 30 September 2026 |
 
-## Analytical Methodology
+The data is synthetic and generated for practice. Customer names and genders were assigned independently, so some genders do not match first names. I did not analyse by gender for that reason.
 
-The project follows a structured analytics workflow.
+### Schema
 
-**Database Engineering**
+```text
+customers (1) ───< orders (many)
 
-- Designed a relational database structure.
-- Established primary and foreign key relationships.
-- Implemented data integrity rules.
-- Loaded customer and transaction records.
+customers: customer_id (PK), customer_name, gender, city, registration_date, customer_segment
+orders:    order_id (PK), customer_id (FK), order_date, product_name, product_category,
+           quantity, unit_price, cost_price, discount, payment_method, order_status
+```
 
-**Data Validation**
+Constraints enforce valid segments, statuses, payment methods, positive quantities and discounts between 0 and 100. Indexes on `orders(customer_id)` and `orders(order_date)` speed up the joins and date filters.
 
-- Verified record volumes.
-- Checked customer-order relationships.
-- Reviewed transaction statuses.
-- Established consistent financial calculation rules.
+## 4. Business rules
 
-**Exploratory and Business Analysis**
-
-- Examined customer distribution and purchasing patterns.
-- Analysed revenue by product and category.
-- Evaluated gross profit and profit margins.
-- Investigated monthly sales performance.
-- Examined customer inactivity and cancellation rates.
-
-**Advanced SQL Analytics**
-
-Applied advanced PostgreSQL capabilities to perform multi-level business analysis, including:
-
-- Common Table Expressions (CTEs).
-- Subqueries and conditional aggregation.
-- INNER JOIN and LEFT JOIN.
-- Window functions and customer rankings.
-- Monthly comparisons using LAG.
-- Customer spending segmentation using NTILE.
-- Running totals and cumulative calculations.
-
-**Reporting and Database Programming**
-
-- Developed a reusable `monthly_sales_summary` database view.
-- Implemented a PL/pgSQL function for calculating completed-order customer revenue.
-- Used structured SQL outputs to support management reporting.
-
-## Business Metrics and Calculation Standards
-
-Financial calculations follow consistent business rules.
-
-| Metric | Calculation |
+| Measure | Definition |
 |---|---|
-| Revenue | Quantity × Unit Price × (1 − Discount / 100) |
-| Total Cost | Quantity × Cost Price |
-| Gross Profit | Revenue − Total Cost |
-| Gross Profit Margin | Gross Profit / Revenue × 100 |
-| Average Order Value | Completed Revenue / Completed Orders |
-| Cancellation Rate | Cancelled Orders / Total Orders × 100 |
+| Revenue | `quantity * unit_price * (1 - discount / 100.0)` |
+| Cost | `quantity * cost_price` |
+| Gross profit | `revenue - cost` |
+| Gross margin | `profit / NULLIF(revenue, 0) * 100` |
+| Money metrics | Completed orders only |
+| Order counts | All statuses, unless a question says otherwise |
+| Reference date | `MAX(order_date)`, not the computer's date |
+| Reporting month | `DATE_TRUNC('month', order_date)` |
 
-All financial performance metrics use completed transactions only. Order activity metrics consider all order statuses unless otherwise specified.
+Key choices: `NULLIF` prevents division by zero; segment averages include customers with no completed revenue; customers with no completed order are not labelled inactive, since there is no purchase date to measure from.
 
-This approach ensures that pending and cancelled transactions do not distort revenue and profitability reporting.
+## 5. What the 46 queries cover
 
-## Analytical Outputs
+| Section | Questions | Focus |
+|---|---|---|
+| A | Q1 to Q10 | SELECT, WHERE, ORDER BY, LIKE, DISTINCT |
+| B | Q11 to Q20 | Aggregations, GROUP BY, revenue and cancellation metrics |
+| C | Q21 to Q28 | INNER and LEFT JOIN, customer spending, segments |
+| D | Q29 to Q34 | Subqueries, CTEs, category profitability, inactivity |
+| E | Q35 to Q42 | RANK, DENSE_RANK, ROW_NUMBER, LAG, NTILE, running totals |
+| F | Q43 to Q46 | Reporting view, PL/pgSQL function, value bands, management report |
 
-The project is structured to generate the following business intelligence outputs:
+**Advanced techniques used**
 
-| Report | Business purpose |
-|---|---|
-| Customer Revenue Ranking | Understand customer contribution |
-| Product Performance | Identify revenue-generating products |
-| Category Profitability | Evaluate gross profit by category |
-| Monthly Sales Trends | Monitor revenue movement |
-| Customer Segmentation | Understand customer value |
-| Customer Inactivity | Identify potential retention opportunities |
-| Cancellation Analysis | Investigate transaction completion |
-| Monthly Sales View | Support recurring performance reporting |
+- **CTEs** to break multi-step analysis into readable stages
+- **Window functions** for rankings, running totals and month-over-month change with `LAG`
+- **Time-series analysis** with `DATE_TRUNC`
+- **Segmentation** with `NTILE(4)` on completed-order spending
+- **A reusable view**, `monthly_sales_summary`
+- **A PL/pgSQL function** that returns completed revenue for a customer ID, and 0 when there is none
+- **Extra analysis** in `06_advanced_analysis.sql`: customer metrics, RFM segmentation and discount-band analysis
 
-Actual findings and quantified recommendations are maintained separately in `insights.md` and are based on executed SQL results.
-
-## Project Architecture
-
-The repository is organised to maintain a reproducible analytics workflow.
+## 6. Repository structure
 
 ```text
 retail-sales-sql/
-│
 ├── README.md
-│
 ├── 01_create_database.sql
-├── 02_create_tables.sql
+├── 02_create_tables.sql        (also supplied as schema.sql)
 ├── 03_insert_customers.sql
 ├── 04_insert_orders.sql
 ├── 05_verify_data.sql
-│
-├── queries.sql
+├── queries.sql                 (Q1 to Q46)
+├── 06_advanced_analysis.sql
 ├── insights.md
-│
 └── screenshots/
     ├── 05_verify_data.png
     ├── revenue_by_category.png
@@ -185,52 +149,53 @@ retail-sales-sql/
     └── monthly_revenue.png
 ```
 
-## Business Impact
+## 7. How to run it
 
-The analytical framework provides management with a clearer view of retail operations.
+**Requirements:** PostgreSQL, and either `psql`, pgAdmin or DBeaver.
 
-It supports:
+```bash
+# 1. Create the database (connect to postgres, not retail_analytics)
+psql -U postgres -d postgres -f 01_create_database.sql
 
-- **Revenue management:** Understanding sales contribution and monthly performance.
-- **Customer retention:** Identifying valuable customers and potential inactivity.
-- **Product strategy:** Distinguishing high-revenue products from high-profit products.
-- **Operational monitoring:** Understanding order completion and cancellation patterns.
-- **Strategic planning:** Supporting decisions using measurable business performance indicators.
+# 2. Create tables, then load customers before orders
+psql -U postgres -d retail_analytics -f 02_create_tables.sql
+psql -U postgres -d retail_analytics -f 03_insert_customers.sql
+psql -U postgres -d retail_analytics -f 04_insert_orders.sql
 
-The resulting analysis provides a foundation for improving customer engagement, product prioritisation and revenue management.
+# 3. Verify, then run the analysis
+psql -U postgres -d retail_analytics -f 05_verify_data.sql
+psql -U postgres -d retail_analytics -f queries.sql
+psql -U postgres -d retail_analytics -f 06_advanced_analysis.sql
+```
 
-## Future Development
+If PostgreSQL is not on the default port, add `-p <port>` to each command. Every script is safe to re-run. In pgAdmin, create the `retail_analytics` database from the menu instead of running file 01.
 
-The analytical environment can be extended through:
+**Expected verification results:** 150 customers, 800 orders, 0 orders without a customer, 0 orders before registration, last order date 2026-09-30, and completed revenue of 24,155,371.70.
 
-- Power BI integration for interactive executive dashboards.
-- Automated sales reporting.
-- Customer lifetime value analysis.
-- Customer retention and cohort analysis.
-- Inventory and demand forecasting.
-- Query optimisation and indexing.
+## 8. Quality checks
 
-## About the Analyst
+- Row counts and referential integrity verified with `05_verify_data.sql`
+- Money metrics use Completed orders only; discounts are treated as percentages
+- Customer counts use `COUNT(DISTINCT customer_id)`
+- Inactivity is measured from the dataset's latest order date, not today's date
+- The view and function run without errors, and the function returns 0 for an unknown customer
+- Every insight in `insights.md` comes from a query output in this repository
 
-**Calvince Okoth | Data Analyst | Aspiring Data Engineer**
+## 9. Limitations and next steps
 
-I am interested in building data solutions that connect database technologies, business analytics and decision-making.
+- The data is synthetic and covers 21 months, so the seasonality findings are indicative, not proven.
+- Customers who register and never buy cannot be analysed for inactivity.
+- **Next:** a monthly cohort-retention analysis, an `EXPLAIN ANALYZE` comparison before and after indexing, and a Power BI or Metabase dashboard built on the reporting view.
 
-My technical toolkit includes PostgreSQL, SQL, Microsoft Excel and Power BI, supported by experience in data annotation, quality assurance and structured data validation.
+## 10. About the analyst
 
-My approach to analytics is centred on understanding business requirements, maintaining data quality, developing reliable analytical solutions and translating data into meaningful business insights.
+**Calvince Okoth, Data Analyst | Aspiring Data Engineer**
 
-**Connect with me:**
+I work with PostgreSQL, SQL, Excel and Power BI, with a background in data annotation, quality assurance and structured data review. This project shows how I work: understand the business question, validate the data, write transparent SQL, interpret the evidence and recommend a clear action.
 
-- GitHub: https://github.com/Calvincekoth
-- LinkedIn: https://www.linkedin.com/in/calvince-okoth-85792b25a/
+- **GitHub:** [Calvincekoth](https://github.com/Calvincekoth)
+- **LinkedIn:** [Calvince Okoth](https://www.linkedin.com/in/calvince-okoth-85792b25a/)
 
 ---
 
-**Project:** Duka Smart Electronics  
-**Domain:** Retail & Commercial Analytics  
-**Database:** PostgreSQL  
-**Data Coverage:** 150 Customers | 800 Orders  
-**Analytical Focus:** Revenue Performance | Customer Intelligence | Product Profitability | Business Reporting
-
-*Turning retail data into business intelligence that drives better decisions.*
+*Duka Smart Electronics is a fictional business. All data is synthetic.*
