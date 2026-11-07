@@ -1,145 +1,183 @@
-# Duka Smart Electronics | Retail Sales & Customer Analytics
+# Duka Smart Electronics
+## Retail Sales, Customer Intelligence & Profitability Analytics
 
-**A PostgreSQL portfolio project by Calvince Okoth**  
-**Domain:** Retail Analytics · **Technology:** PostgreSQL · **Level:** Beginner to Advanced
+**Data Analytics Project | PostgreSQL | SQL | Business Intelligence**
 
-> **From 950 retail records to business decisions.**  
-> This project uses SQL to investigate customer value, product profitability, sales trends and customer inactivity for a growing Kenyan electronics retailer.
+**Analyst:** Calvince Okoth
 
 ---
 
-## 1. Executive overview
+## Business Overview
 
-Duka Smart Electronics is a fictional Kenyan retailer selling phones, laptops, accessories, televisions and home appliances across ten towns. The business has recorded its customer and order activity since January 2025, but management has not yet used the data to guide decisions.
+Duka Smart Electronics is a growing Kenyan electronics retailer serving customers across ten towns, with a product portfolio spanning mobile phones, computers, accessories, televisions and home appliances.
 
-As the Junior Data Analyst, I use PostgreSQL to build a relational database, validate the records and answer 46 business questions. The analysis moves from foundational SQL queries to CTEs, window functions, a reporting view and a PL/pgSQL function.
+As the business expands, understanding sales performance, customer purchasing behaviour and product profitability becomes increasingly important.
 
-The project is designed to answer four management priorities:
+This project focuses on transforming the company's transactional data into structured business intelligence that supports management decision-making.
 
-1. **Customer value:** Who are the highest-spending customers, and who may have stopped buying?
-2. **Product economics:** Which products and categories generate revenue and gross profit?
-3. **Sales momentum:** Is monthly revenue increasing or decreasing?
-4. **Business action:** What should management prioritise based on the evidence?
+Using PostgreSQL, I developed a relational data environment and conducted an in-depth analysis of customer activity, sales performance, product economics and revenue trends.
 
-The deliverable is not just a set of SQL exercises. It is a reproducible retail analytics workflow that turns transactional data into decision-ready information.
+The objective is to identify business performance patterns, uncover opportunities and provide management with information that can support sustainable growth.
 
-## 2. Dataset at a glance
+## Business Intelligence Objectives
 
-| Dataset component | Volume / coverage |
+The analysis focuses on five key business areas.
+
+**1. Revenue Performance**
+- Evaluate overall sales performance.
+- Analyse monthly revenue trends.
+- Identify changes in sales momentum.
+- Examine order completion and cancellation patterns.
+
+**2. Customer Intelligence**
+- Identify the highest-value customers.
+- Compare purchasing behaviour across customer segments.
+- Analyse customer spending patterns.
+- Identify potentially inactive customers.
+
+**3. Product Performance**
+- Determine revenue contribution by product.
+- Identify high-performing product categories.
+- Evaluate product costs and gross profitability.
+- Compare sales performance against product economics.
+
+**4. Customer Segmentation**
+- Analyse Retail, Corporate and VIP customer groups.
+- Rank customers according to completed-order spending.
+- Identify valuable customer groups.
+- Understand differences in purchasing activity.
+
+**5. Management Reporting**
+- Develop reusable monthly sales reporting.
+- Create customer-level revenue calculations.
+- Produce structured outputs to support business decisions.
+
+## Data Overview
+
+The analysis uses a fictional but structured retail dataset representing business activity from January 2025 to September 2026.
+
+| Data component | Volume |
 |---|---:|
-| Customers | 150 |
-| Orders | 800 |
+| Customer records | 150 |
+| Order records | 800 |
 | Total records | 950 |
 | Product categories | 5 |
-| Customer locations | 10 Kenyan towns |
-| Customer segments | Retail, Corporate, VIP |
+| Customer locations | 10 |
+| Customer segments | 3 |
 | Payment methods | 4 |
-| Order statuses | Completed, Pending, Cancelled |
-| Trading history | January 2025 – September 2026 |
 
-**Locations:** Nairobi, Mombasa, Kisumu, Nakuru, Eldoret, Thika, Nyeri, Meru, Machakos and Kiambu.
+**Business locations:** Nairobi, Mombasa, Kisumu, Nakuru, Eldoret, Thika, Nyeri, Meru, Machakos and Kiambu.
 
 **Product categories:** Electronics, Accessories, Home Appliances, Computing and Mobile Phones.
 
-The customer names are fictional. This dataset is intended for portfolio and analytical practice, not as a representation of a real company's confidential records.
+*The dataset contains fictional customer information and is used to demonstrate a realistic retail analytics scenario.*
 
-## 3. Business rules and metric definitions
+## Technology Stack
 
-These definitions are applied consistently throughout the analysis.
-
-| Measure | Definition |
+| Technology | Application |
 |---|---|
-| Revenue | `quantity * unit_price * (1 - discount / 100.0)` |
-| Cost | `quantity * cost_price` |
-| Gross profit | `revenue - cost` |
-| Gross profit margin | `profit / NULLIF(revenue, 0) * 100` |
-| Money metrics | Completed orders only |
-| Order counts | All orders, regardless of status |
-| Customer counts | Distinct customers |
-| Latest data date | `MAX(order_date)` from the orders table |
-| Reporting month | `DATE_TRUNC('month', order_date)` |
-| Discount | Percentage; for example, `10` means 10% off |
+| PostgreSQL | Relational database management |
+| SQL | Data extraction, transformation and analysis |
+| DBeaver | Database administration and query execution |
+| Git | Version control |
+| GitHub | Project documentation and collaboration |
 
-**Important analytical choices**
+## Analytical Methodology
 
-- Revenue, cost, profit, spending and average order value include **Completed** orders only.
-- Order counts include Completed, Pending and Cancelled orders unless a question explicitly asks for a particular status.
-- The dataset's latest order date is used as the reference date for inactivity analysis. The computer's current date is not used.
-- `NULLIF` protects margin calculations from division by zero.
-- A customer's spending is the sum of completed-order revenue, after discount.
-- In Q27, average customer spending is calculated across all customers in each segment; customers with no completed revenue contribute zero.
-- In Q28, popularity is measured by the number of orders per category among VIP customers, regardless of status.
-- In Q34, customers with no completed order are not classified as inactive; there is no completed-order date from which to measure inactivity.
-- In Q41, all customers are included in the four spending groups, including customers with zero completed revenue.
+The project follows a structured analytics workflow.
 
-## 4. Database model
+**Database Engineering**
 
-The project uses two related tables.
+- Designed a relational database structure.
+- Established primary and foreign key relationships.
+- Implemented data integrity rules.
+- Loaded customer and transaction records.
 
-### `customers`
+**Data Validation**
 
-| Column | Description |
+- Verified record volumes.
+- Checked customer-order relationships.
+- Reviewed transaction statuses.
+- Established consistent financial calculation rules.
+
+**Exploratory and Business Analysis**
+
+- Examined customer distribution and purchasing patterns.
+- Analysed revenue by product and category.
+- Evaluated gross profit and profit margins.
+- Investigated monthly sales performance.
+- Examined customer inactivity and cancellation rates.
+
+**Advanced SQL Analytics**
+
+Applied advanced PostgreSQL capabilities to perform multi-level business analysis, including:
+
+- Common Table Expressions (CTEs).
+- Subqueries and conditional aggregation.
+- INNER JOIN and LEFT JOIN.
+- Window functions and customer rankings.
+- Monthly comparisons using LAG.
+- Customer spending segmentation using NTILE.
+- Running totals and cumulative calculations.
+
+**Reporting and Database Programming**
+
+- Developed a reusable `monthly_sales_summary` database view.
+- Implemented a PL/pgSQL function for calculating completed-order customer revenue.
+- Used structured SQL outputs to support management reporting.
+
+## Business Metrics and Calculation Standards
+
+Financial calculations follow consistent business rules.
+
+| Metric | Calculation |
 |---|---|
-| `customer_id` | Primary key; unique customer identifier |
-| `customer_name` | Customer's fictional full name |
-| `gender` | Male or Female |
-| `city` | Customer's town |
-| `registration_date` | Date the customer joined |
-| `customer_segment` | Retail, Corporate or VIP |
+| Revenue | Quantity × Unit Price × (1 − Discount / 100) |
+| Total Cost | Quantity × Cost Price |
+| Gross Profit | Revenue − Total Cost |
+| Gross Profit Margin | Gross Profit / Revenue × 100 |
+| Average Order Value | Completed Revenue / Completed Orders |
+| Cancellation Rate | Cancelled Orders / Total Orders × 100 |
 
-### `orders`
+All financial performance metrics use completed transactions only. Order activity metrics consider all order statuses unless otherwise specified.
 
-| Column | Description |
+This approach ensures that pending and cancelled transactions do not distort revenue and profitability reporting.
+
+## Analytical Outputs
+
+The project is structured to generate the following business intelligence outputs:
+
+| Report | Business purpose |
 |---|---|
-| `order_id` | Primary key; unique order identifier |
-| `customer_id` | Foreign key to `customers.customer_id` |
-| `order_date` | Transaction date |
-| `product_name` | Product ordered |
-| `product_category` | Product category |
-| `quantity` | Units ordered |
-| `unit_price` | Selling price per unit before discount, KSh |
-| `cost_price` | Cost per unit, KSh |
-| `discount` | Discount percentage, from 0 to 100 |
-| `payment_method` | M-Pesa, Cash, Card or Bank Transfer |
-| `order_status` | Completed, Pending or Cancelled |
+| Customer Revenue Ranking | Understand customer contribution |
+| Product Performance | Identify revenue-generating products |
+| Category Profitability | Evaluate gross profit by category |
+| Monthly Sales Trends | Monitor revenue movement |
+| Customer Segmentation | Understand customer value |
+| Customer Inactivity | Identify potential retention opportunities |
+| Cancellation Analysis | Investigate transaction completion |
+| Monthly Sales View | Support recurring performance reporting |
 
-**Relationship:** One customer can place many orders; each order belongs to one customer.
+Actual findings and quantified recommendations are maintained separately in `insights.md` and are based on executed SQL results.
 
-## 5. Analytical coverage: 46 SQL questions
+## Project Architecture
 
-The `queries.sql` file contains all 46 questions, each labelled `-- Q1` through `-- Q46`.
-
-| Section | Questions | Analytical focus |
-|---|---:|---|
-| A | Q1–Q10 | SELECT, filtering, sorting, pattern matching and DISTINCT |
-| B | Q11–Q20 | Aggregations, grouping, revenue and cancellation metrics |
-| C | Q21–Q28 | INNER/LEFT JOIN, customer spending and segmentation |
-| D | Q29–Q34 | Subqueries, CTEs, category profitability and inactivity |
-| E | Q35–Q42 | RANK, ROW_NUMBER, DENSE_RANK, LAG, NTILE and running totals |
-| F | Q43–Q46 | Reporting view, PL/pgSQL function, customer value bands and management report |
-
-### Advanced SQL demonstrated
-
-- **CTEs:** break multi-stage analysis into readable, testable steps.
-- **Window functions:** rank customers and products, calculate running totals and compare monthly results.
-- **Time-series analysis:** use `DATE_TRUNC` and `LAG` to measure month-over-month performance.
-- **Customer segmentation:** apply `NTILE(4)` to group customers by completed-order spending.
-- **Reusable reporting:** create `monthly_sales_summary` as a database view.
-- **Database programming:** create a PL/pgSQL function that returns completed-order revenue for a supplied customer ID.
-- **Performance investigation:** use `EXPLAIN ANALYZE` as the stretch task to compare query plans before and after indexing.
-
-## 6. Repository structure
+The repository is organised to maintain a reproducible analytics workflow.
 
 ```text
 retail-sales-sql/
+│
 ├── README.md
+│
 ├── 01_create_database.sql
 ├── 02_create_tables.sql
 ├── 03_insert_customers.sql
 ├── 04_insert_orders.sql
 ├── 05_verify_data.sql
+│
 ├── queries.sql
 ├── insights.md
+│
 └── screenshots/
     ├── 05_verify_data.png
     ├── revenue_by_category.png
@@ -147,141 +185,52 @@ retail-sales-sql/
     └── monthly_revenue.png
 ```
 
-Keep the original setup and data-loading scripts in the repository. The `queries.sql` file contains the 46 analytical answers. Add `insights.md` and screenshots after running the queries and verifying the actual results.
+## Business Impact
 
-## 7. Setup and execution
+The analytical framework provides management with a clearer view of retail operations.
 
-### Prerequisites
+It supports:
 
-- PostgreSQL
-- pgAdmin or DBeaver, or the `psql` command-line client
-- Git (for version control and publishing)
+- **Revenue management:** Understanding sales contribution and monthly performance.
+- **Customer retention:** Identifying valuable customers and potential inactivity.
+- **Product strategy:** Distinguishing high-revenue products from high-profit products.
+- **Operational monitoring:** Understanding order completion and cancellation patterns.
+- **Strategic planning:** Supporting decisions using measurable business performance indicators.
 
-### Step 1 — Download the project files
+The resulting analysis provides a foundation for improving customer engagement, product prioritisation and revenue management.
 
-Download all six supplied dataset files into one project folder:
+## Future Development
 
-- `README.md`
-- `01_create_database.sql`
-- `02_create_tables.sql`
-- `03_insert_customers.sql`
-- `04_insert_orders.sql`
-- `05_verify_data.sql`
+The analytical environment can be extended through:
 
-Add the supplied `queries.sql` file from this repository.
+- Power BI integration for interactive executive dashboards.
+- Automated sales reporting.
+- Customer lifetime value analysis.
+- Customer retention and cohort analysis.
+- Inventory and demand forecasting.
+- Query optimisation and indexing.
 
-### Step 2 — Create the database
+## About the Analyst
 
-Connect to the default `postgres` database and run:
+**Calvince Okoth | Data Analyst | Aspiring Data Engineer**
 
-```bash
-psql -U postgres -d postgres -f 01_create_database.sql
-```
+I am interested in building data solutions that connect database technologies, business analytics and decision-making.
 
-### Step 3 — Create tables
+My technical toolkit includes PostgreSQL, SQL, Microsoft Excel and Power BI, supported by experience in data annotation, quality assurance and structured data validation.
 
-Connect to `retail_analytics`, then run:
+My approach to analytics is centred on understanding business requirements, maintaining data quality, developing reliable analytical solutions and translating data into meaningful business insights.
 
-```bash
-psql -U postgres -d retail_analytics -f 02_create_tables.sql
-```
+**Connect with me:**
 
-### Step 4 — Load customers and orders
-
-Run the customer script before the order script because orders reference customers through a foreign key.
-
-```bash
-psql -U postgres -d retail_analytics -f 03_insert_customers.sql
-psql -U postgres -d retail_analytics -f 04_insert_orders.sql
-```
-
-### Step 5 — Verify the data
-
-```bash
-psql -U postgres -d retail_analytics -f 05_verify_data.sql
-```
-
-The verification should confirm **150 customers and 800 orders**. Save a screenshot of the successful output in `screenshots/`.
-
-### Step 6 — Run the analysis
-
-```bash
-psql -U postgres -d retail_analytics -f queries.sql
-```
-
-You can also open `queries.sql` in pgAdmin or DBeaver and execute each numbered section individually. Check that the active connection is `retail_analytics`.
-
-> If your setup scripts use a different database name or schema, follow the supplied scripts and update the connection instructions accordingly. Do not run the database-creation script while connected to the database it is trying to create.
-
-## 8. Business insights and management recommendations
-
-Create an `insights.md` file after executing the SQL. Include at least five findings. Each finding should contain:
-
-1. **Evidence:** the actual SQL result, with the value and relevant period/category/customer.
-2. **Interpretation:** what the result means for the business.
-3. **Recommendation:** a specific action management could take.
-
-Suggested insight areas:
-
-- Top five customers by completed-order revenue.
-- Highest-revenue and highest-gross-profit products.
-- Most profitable product category by gross profit.
-- Month-over-month revenue movement.
-- Customers whose latest completed order is more than 90 days before the dataset's latest order date.
-- Cancellation rate and the operational question it raises.
-
-Do not invent findings or write recommendations as if a pattern has been proven before running the queries. Distinguish revenue from profit: a product with high sales is not necessarily the product with the highest gross profit.
-
-## 9. Quality checks
-
-Before publishing, confirm that:
-
-- `05_verify_data.sql` reports 150 customers and 800 orders.
-- Every question from Q1 to Q46 has a query under the matching comment.
-- Completed-order-only rules are applied to all money metrics.
-- Discounts are treated as percentages, not currency amounts.
-- Customer counts use distinct customer identifiers where appropriate.
-- Q34 uses the latest order date in the dataset.
-- Q43's view counts all orders but calculates financial measures from Completed orders only.
-- Q44 returns zero for a customer ID with no matching completed revenue.
-- The view and function execute successfully.
-- Business insights are supported by query outputs.
-
-## 10. Assessment and project scope
-
-The original assignment is designed for seven days and 100 marks.
-
-| Assessment area | Weight |
-|---|---:|
-| Database setup and schema | 10% |
-| SQL correctness — Q1–Q28 | 30% |
-| SQL correctness — Q29–Q46 | 30% |
-| Business insights | 20% |
-| Code quality and documentation | 10% |
-
-**Stretch goals**
-
-- Use `EXPLAIN ANALYZE` on a slow query, add a justified index and compare execution plans.
-- Build a monthly cohort-retention analysis to measure repeat purchasing.
-- Connect PostgreSQL to Power BI, Excel or Metabase and create a one-page dashboard from the reporting view.
-
-## 11. About the analyst
-
-**Calvince Okoth — Data Analyst | Aspiring Data Engineer**
-
-I am building practical capability in data analytics and data engineering, with an interest in using databases and analytical tools to solve real business problems.
-
-My toolkit includes PostgreSQL, SQL, Excel and Power BI, supported by experience in data annotation, quality assurance and structured data review.
-
-This project demonstrates my approach to analytical work: understand the business question, validate the data, write transparent SQL, interpret the evidence and communicate an actionable recommendation.
-
-- **GitHub:** [Calvincekoth](https://github.com/Calvincekoth)
-- **LinkedIn:** [Calvince Okoth](https://www.linkedin.com/in/calvince-okoth-85792b25a/)
+- GitHub: https://github.com/Calvincekoth
+- LinkedIn: https://www.linkedin.com/in/calvince-okoth-85792b25a/
 
 ---
 
-**Project:** Duka Smart Electronics — Retail Sales & Customer Analytics  
-**Database:** PostgreSQL · **Dataset:** 150 customers / 800 orders  
-**Focus:** SQL Analytics · Customer Intelligence · Product Profitability · Business Intelligence
+**Project:** Duka Smart Electronics  
+**Domain:** Retail & Commercial Analytics  
+**Database:** PostgreSQL  
+**Data Coverage:** 150 Customers | 800 Orders  
+**Analytical Focus:** Revenue Performance | Customer Intelligence | Product Profitability | Business Reporting
 
-*Turning transactional data into decisions that move businesses forward.*
+*Turning retail data into business intelligence that drives better decisions.*
