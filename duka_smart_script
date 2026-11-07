@@ -1008,6 +1008,67 @@ SELECT
 FROM orders
 WHERE order_status = 'Completed';
 
+SELECT*
+FROM customers;
+SELECT*
+FROM orders;
+--SECTION A
+-- All customers record
+SELECT*
+FROM customers;
+-- customer names,cities and segments
+SELECT 
+ customer_name,
+ city,
+ customer_segment
+FROM customers;
+
+--customers in Nairobi
+SELECT *
+FROM customers c 
+WHERE city ='Nairobi';
+--customers registered after january 1,2025
+SELECT*
+FROM customers c 
+WHERE registration_date >= '2025-01-01';
+----unique customers cities
+SELECT DISTINCT 
+ city
+FROM customers;
+--all records for orders
+SELECT*
+FROM orders;
+--retrieve 10  most recent orders
+SELECT *
+FROM orders o 
+ORDER BY order_date DESC
+LIMIT 10;
+--orders with unit price more than 10000
+SELECT*
+FROM orders o 
+WHERE unit_price>= 10000
+ORDER BY unit_price DESC;
+--customers whose names starts with
+SELECT*
+FROM customers c 
+WHERE customer_name LIKE 'A%';
+--orders wirh quantity between 2 and 5
+SELECT*
+FROM orders
+WHERE quantity BETWEEN 2 AND 5;
+--orders paid through m-pesa
+SELECT*
+FROM orders o 
+WHERE payment_method='M-Pesa';
+
+
+
+
+
+
+
+
+
 
 
 
